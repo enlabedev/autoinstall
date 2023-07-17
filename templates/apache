@@ -1,0 +1,76 @@
+ServerName SERVERNAME
+Mutex file:${APACHE_LOCK_DIR} default
+PidFile ${APACHE_PID_FILE}
+Timeout 60
+KeepAlive On
+MaxKeepAliveRequests 50
+KeepAliveTimeout 2
+
+StartServers 5
+MaxClients 150
+MaxRequestsPerChild 0
+LimitRequestBody 5242880
+LimitRequestFields 50
+LimitRequestFieldSize 4095
+LimitRequestLine 10000
+
+User ${APACHE_RUN_USER}
+Group ${APACHE_RUN_GROUP}
+AccessFileName .htaccess
+<Files ~ "^\.ht">
+    Order allow,deny
+    Require all denied
+</Files>
+
+<Directory /> 
+    Options -Indexes 
+    AllowOverride None
+    <LimitExcept GET POST HEAD>
+        deny from all
+    </LimitExcept>
+    RewriteEngine On
+    RewriteCond %{THE_REQUEST} !HTTP/1.1$
+    RewriteRule .* - [F]
+</Directory>
+
+TraceEnable off
+
+HostnameLookups Off
+ErrorLog ${APACHE_LOG_DIR}/error.log
+LogLevel warn
+
+# Include module configuration:
+Include mods-enabled/*.load
+Include mods-enabled/*.conf
+
+# Include ports listing
+Include ports.conf
+
+LogFormat "%v:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
+LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%h %l %u %t \"%r\" %>s %O" common
+LogFormat "%{Referer}i -> %U" referer
+
+
+LogFormat "%{User-agent}i" agent
+
+Include conf-enabled/
+Include sites-enabled/
+
+ServerSignature Off
+ServerTokens Prod
+
+<IfModule headers_module>
+    Header always set Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+    Header always append x-xss-protection: "1; mode=block"
+    Header always set Content-Security-Policy "frame-ancestors 'self'"
+    Header set X-Frame-Options: SAMEORIGIN
+    Header set X-Content-Type-Options nosniff
+    Header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure
+    Header unset Server
+    FileETag None
+</IfModule>
+ErrorDocument 404 "File not found."
+ErrorDocument 500 "Maintenance tasks in progress. Sorry for the inconvenience."
+ErrorDocument 403 "Forbidden."
+
