@@ -59,13 +59,4 @@ ufw --force enable
 ufw allow "Apache Full"
 ufw allow OpenSSH
 
-echo "AllowTcpForwarding NO" >> /etc/sshd_config
-echo "ClientAliveCountMax 2" >> /etc/sshd_config
-echo "LogLevel VERBOSE" >> /etc/sshd_config
-echo "MaxAuthTries 3" >> /etc/sshd_config
-echo "MaxSessions 2" >> /etc/sshd_config
-echo "TCPKeepAlive NO" >> /etc/sshd_config
-echo "X11Forwarding NO" >> /etc/sshd_config
-echo "AllowAgentForwarding NO" >> /etc/sshd_config
-
 sudo service ssh restart
